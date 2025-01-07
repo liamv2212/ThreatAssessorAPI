@@ -32,7 +32,6 @@ public class SQLHelpers {
             ZoneId zoneId = ZoneId.systemDefault();
             start = instant.atZone(zoneId).toLocalDate();
             start = toMonday(start);
-            System.out.println(start.getDayOfWeek());
             LocalDate end = LocalDate.now();
             rangeQuery = " AND partition_date BETWEEN '" + start + "' AND '" + end + "'";
         }

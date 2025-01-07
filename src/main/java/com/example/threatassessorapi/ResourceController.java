@@ -33,6 +33,7 @@ public class ResourceController {
                 resources.add(resource);
             }
         }catch (Exception e) {
+            System.err.println(e.getMessage());
             throw new BadRequestException(e.getMessage());
         }
         return resources;
@@ -66,6 +67,7 @@ public class ResourceController {
                 resourceVulnerabilities.add(resourceVulnerability);
             }
         }catch (Exception e) {
+            System.err.println(e.getMessage());
             throw new BadRequestException(e.getMessage());
         }
         return resourceVulnerabilities;
@@ -97,6 +99,7 @@ public class ResourceController {
                 );
             }
         }catch (Exception e) {
+            System.err.println(e.getMessage());
             throw new BadRequestException(e.getMessage());
         }
         return vulnCount;
@@ -131,6 +134,7 @@ public class ResourceController {
                 vulnCounts.add(vulnCount);
             }
         }catch (Exception e) {
+            System.err.println(e.getMessage());
             throw new BadRequestException(e.getMessage());
         }
         return vulnCounts;
@@ -153,7 +157,7 @@ public class ResourceController {
                 count = rs.getInt("count");
             }
         }catch (Exception e) {
-            System.out.println(e.getMessage());
+            System.err.println(e.getMessage());
             throw new BadRequestException(e.getMessage());
         }
         return count;

@@ -10,6 +10,9 @@ import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Random;
+
+import static com.example.threatassessorapi.SQLHelpers.toMonday;
+
 @RestController
 @RequestMapping(path = "/db")
 public class DBSeeder {
@@ -43,14 +46,16 @@ public class DBSeeder {
                     for (int j = 0; j < nameLength; j++) {
                         vulnerability.append(alphabet[rand.nextInt(alphabet.length)]);
                     }
-                    for (int k = 0; k< rand.nextInt(10); k++){
-                        partition_dates.add(LocalDate.now().minusWeeks(k));
+                    for (int k = 0; k< rand.nextInt(9,12); k++){
+                        LocalDate date = LocalDate.now().minusWeeks(10).plusWeeks(k);
+                        date = toMonday(date);
+                        partition_dates.add(date);
                     }
                     for(int l = 0; l<partition_dates.size(); l++) {
                         try (Connection connection = ResourceDB.connect();
                              Statement statement = connection.createStatement()) {
                             String sqlQuery = "INSERT INTO vulnerabilities(vulnerability_name, resource_id, organization_id, risk_score, first_found, partition_date)\n" +
-                                    "VALUES ('" + vulnerability + "'," + resourceId + "," + org_id + "," + riskScore + ", '" + partition_dates.get(partition_dates.size() - 1) + "', '" + partition_dates.get(l) + "');";
+                                    "VALUES ('" + vulnerability + "'," + resourceId + "," + org_id + "," + riskScore + ", '" + partition_dates.get(0) + "', '" + partition_dates.get(l) + "');";
                             statement.executeQuery(sqlQuery);
                         } catch (SQLException | ClassNotFoundException e) {
                         }

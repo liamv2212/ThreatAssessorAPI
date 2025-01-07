@@ -1,11 +1,11 @@
 package com.example.threatassessorapi;
 
-public class ResourceCount {
+public class VulnCount {
     private int resource_id;
     private String resource_name;
     private int vulnCount;
 
-    public ResourceCount(int resourceId, String resourceType, int vulnCount) {
+    public VulnCount(int resourceId, String resourceType, int vulnCount) {
         this.resource_id = resourceId;
         this.resource_name = resourceType;
         this.vulnCount = vulnCount;

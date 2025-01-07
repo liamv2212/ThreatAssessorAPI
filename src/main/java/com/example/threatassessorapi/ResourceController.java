@@ -53,7 +53,6 @@ public class ResourceController {
             String query = "select resource_id, resource_name, vulnerability_id, vulnerability_name, partition_date, organization_id" +
                     " from resource inner join vulnerabilities using (resource_id, organization_id)" +
                     " where organization_id = " + orgId + getDateFilter(startDate, endDate) + getResourceTypeFilter(resource_type) + getOSFilter(OS) + " group by resource_id, vulnerability_id ";
-            System.out.println(query);
             ResultSet rs = statement.executeQuery(query);
             while (rs.next()) {
                 var resourceVulnerability = new ResourceVulnerability(
@@ -75,26 +74,23 @@ public class ResourceController {
     @GetMapping(
             path="/{id}/vulnCount",
             produces = "application/json")
-    private static ResourceCount countVulnsForResource(@RequestParam("org_id") int orgId,
-                                                       @RequestParam(value = "start_date", required = false) Long startDate,
-                                                       @RequestParam(value = "end_date", required = false) Long endDate,
-                                                       @PathVariable("id") int id,
-                                                       @RequestParam(value = "OS", required = false) String OS,
-                                                       @RequestParam(value = "resource_type", required = false) String resource_type) throws SQLException, BadRequestException {
-        ResourceCount resourceCount = null;
+    private static VulnCount countVulnsForResource(@RequestParam("org_id") int orgId,
+                                                   @RequestParam(value = "start_date", required = false) Long startDate,
+                                                   @RequestParam(value = "end_date", required = false) Long endDate,
+                                                   @PathVariable("id") int id) throws SQLException, BadRequestException {
+        VulnCount vulnCount = null;
         try(Connection connection = ResourceDB.connect();
             Statement statement = connection.createStatement()) {
             String query = "WITH countTable as (select resource_id, COUNT(vulnerability_id) vulnCount from vulnerabilities " +
                     "where resource_id = " + id + " " +
                     "and organization_id = " + orgId + getDateFilter(startDate, endDate)
-                    + getOSFilter(OS) + getResourceTypeFilter(resource_type) +
-                    " group by resource_id)" +
+                    + " group by resource_id)" +
                     "select resource_id, resource_name, vulnCount" +
                     " from resource inner join countTable using (resource_id)" +
                     "group by resource_id, resource_name, vulnCount ";
             ResultSet rs = statement.executeQuery(query);
             while (rs.next()) {
-                resourceCount = new ResourceCount(
+                vulnCount = new VulnCount(
                         rs.getInt("resource_id"),
                         rs.getString("resource_name"),
                         rs.getInt("vulnCount")
@@ -103,42 +99,64 @@ public class ResourceController {
         }catch (Exception e) {
             throw new BadRequestException(e.getMessage());
         }
-        return resourceCount;
+        return vulnCount;
     }
 
     @GetMapping(
             path="/vulnCount",
             produces = "application/json")
-    private static ArrayList<ResourceCount> countVulnsForAllResources(@RequestParam("org_id") int orgId,
-                                                                      @RequestParam(value = "start_date", required = false) Long startDate,
-                                                                      @RequestParam(value = "end_date", required = false) Long endDate,
-                                                                      @RequestParam(value = "OS", required = false) String OS,
-                                                                      @RequestParam(value = "resource_type", required = false) String resource_type
+    private static ArrayList<VulnCount> countVulnsForAllResources(@RequestParam("org_id") int orgId,
+                                                                  @RequestParam(value = "start_date", required = false) Long startDate,
+                                                                  @RequestParam(value = "end_date", required = false) Long endDate,
+                                                                  @RequestParam(value = "OS", required = false) String OS,
+                                                                  @RequestParam(value = "resource_type", required = false) String resource_type
                                                        ) throws SQLException, BadRequestException {
-        ResourceCount resourceCount = null;
-        ArrayList<ResourceCount> resourceCounts = new ArrayList<>();
+        VulnCount vulnCount = null;
+        ArrayList<VulnCount> vulnCounts = new ArrayList<>();
         try(Connection connection = ResourceDB.connect();
             Statement statement = connection.createStatement()) {
             String query = "WITH countTable as (select resource_id, COUNT(vulnerability_id) vulnCount " +
-                    "from vulnerabilities where organization_id = " + orgId + getDateFilter(startDate, endDate) + getOSFilter(OS) + getResourceTypeFilter(resource_type)+ " " +
-                    "group by resource_id)" +
+                    "from vulnerabilities where organization_id = " + orgId + getDateFilter(startDate, endDate) +
+                    " group by resource_id)" +
                     "select resource_id, resource_name, vulnCount" +
-                    " from resource inner join countTable using (resource_id)" +
-                    "group by resource_id, resource_name, vulnCount ";
-            System.out.println(query);
+                    " from resource inner join countTable using (resource_id) WHERE organization_id = " + orgId + getOSFilter(OS) + getResourceTypeFilter(resource_type) +
+                    " group by resource_id, resource_name, vulnCount ";
             ResultSet rs = statement.executeQuery(query);
             while (rs.next()) {
-                resourceCount = new ResourceCount(
+                vulnCount = new VulnCount(
                         rs.getInt("resource_id"),
                         rs.getString("resource_name"),
                         rs.getInt("vulnCount")
                 );
-                resourceCounts.add(resourceCount);
+                vulnCounts.add(vulnCount);
             }
         }catch (Exception e) {
             throw new BadRequestException(e.getMessage());
         }
-        return resourceCounts;
+        return vulnCounts;
+    }
+
+    @GetMapping(
+            path="/count",
+            produces = "application/json")
+    private static int countAllResources(@RequestParam("org_id") int orgId,
+                                         @RequestParam(value = "OS", required = false) String OS,
+                                         @RequestParam(value = "resource_type", required = false) String resource_type
+    ) throws SQLException, BadRequestException {
+        int count = 0;
+        try(Connection connection = ResourceDB.connect();
+            Statement statement = connection.createStatement()) {
+            String query = "select count(DISTINCT resource_id) count" +
+                    " from resource WHERE organization_id = " + orgId + getOSFilter(OS) + getResourceTypeFilter(resource_type);
+            ResultSet rs = statement.executeQuery(query);
+            while (rs.next()) {
+                count = rs.getInt("count");
+            }
+        }catch (Exception e) {
+            System.out.println(e.getMessage());
+            throw new BadRequestException(e.getMessage());
+        }
+        return count;
     }
 }
 

@@ -1,8 +1,12 @@
 package com.example.threatassessorapi;
 
+import java.sql.Date;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Objects;
 
 public class SQLHelpers {
@@ -39,6 +43,61 @@ public class SQLHelpers {
             throw new Exception("Start Date must be specified to use End Date");
         }
         return rangeQuery;
+    }
+
+    public static LocalDate getEndDate(Long endDate){
+        Instant startInstant = Instant.ofEpochMilli(endDate);
+        ZoneId startZoneId = ZoneId.systemDefault();
+        return toMonday(startInstant.atZone(startZoneId).toLocalDate());
+
+    }
+
+    public static ArrayList<LocalDate> getStartDates(Long startDate, LocalDate end){
+        ArrayList<LocalDate> startDates = new ArrayList<>();
+        Instant startInstant = Instant.ofEpochMilli(startDate);
+        ZoneId startZoneId = ZoneId.systemDefault();
+        LocalDate start = toMonday(startInstant.atZone(startZoneId).toLocalDate());
+        while (!start.equals(end)){
+            startDates.add(start);
+            start = start.plusWeeks(1);
+        }
+        return startDates;
+    }
+
+    public static ArrayList<LocalDate> getEndDates(ArrayList<LocalDate> startDates){
+        ArrayList<LocalDate> endDates = new ArrayList<>();
+        for (LocalDate startDate : startDates) {
+            endDates.add(startDate.plusWeeks(1));
+        }
+        return endDates;
+    }
+
+    public static DatedInteger getDatedInteger(ResultSet rs, LocalDate endDate, String integerName) throws SQLException {
+        if(rs.next()) {
+            return new DatedInteger(
+                    Date.valueOf(endDate),
+                    rs.getInt(integerName)
+            );
+        }
+        else{
+           return new DatedInteger(
+                    Date.valueOf(endDate),
+                    0
+            );
+        }
+    }
+
+    public static VulnCount getVulnCount(ResultSet rs, LocalDate endDate) throws SQLException {
+        return  new VulnCount(
+                rs.getInt("resource_id"),
+                rs.getString("resource_name"),
+                rs.getInt("vulnCount"),
+                Date.valueOf(endDate)
+            );
+    }
+
+    public static String getHistoricalDateString(LocalDate startDate, LocalDate endDate){
+        return " and partition_date in ('" + startDate + "', '"  + endDate + "')";
     }
 
     public static String getOSFilter(String OS) throws Exception {

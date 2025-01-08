@@ -3,11 +3,10 @@ package com.example.threatassessorapi;
 import org.apache.coyote.BadRequestException;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Objects;
 
 import static com.example.threatassessorapi.SQLHelpers.*;
 
@@ -76,33 +75,50 @@ public class ResourceController {
     @GetMapping(
             path="/{id}/vulnCount",
             produces = "application/json")
-    private static VulnCount countVulnsForResource(@RequestParam("org_id") int orgId,
-                                                   @RequestParam(value = "start_date", required = false) Long startDate,
-                                                   @RequestParam(value = "end_date", required = false) Long endDate,
-                                                   @PathVariable("id") int id) throws SQLException, BadRequestException {
-        VulnCount vulnCount = null;
+    private static ArrayList<VulnCount> countVulnsForResource(@RequestParam("org_id") int orgId,
+                                                              @RequestParam(value = "start_date", required = false) Long startDate,
+                                                              @RequestParam(value = "end_date", required = false) Long endDate,
+                                                              @PathVariable("id") int id) throws SQLException, BadRequestException {
+        ArrayList<VulnCount> count = new ArrayList<>();
+        ArrayList<LocalDate> startDates = new ArrayList<>();
+        ArrayList<LocalDate> endDates = new ArrayList<>();
+        if(!Objects.isNull(endDate)){
+            if (!Objects.isNull(startDate)) {
+                LocalDate end = getEndDate(endDate);
+                startDates = getStartDates(startDate, end);
+                endDates = getEndDates(startDates);
+            }
+            else throw new BadRequestException("Start date is required to use End Date");
+        }
+        else {
+            LocalDate end = toMonday(LocalDate.now());
+            if (!Objects.isNull(startDate)) {
+                startDates = getStartDates(startDate, end);
+            }
+            else startDates.add(toMonday(LocalDate.now().minusWeeks(1)));
+            endDates = getEndDates(startDates);
+
+        }
         try(Connection connection = ResourceDB.connect();
             Statement statement = connection.createStatement()) {
-            String query = "WITH countTable as (select resource_id, COUNT(vulnerability_id) vulnCount from vulnerabilities " +
-                    "where resource_id = " + id + " " +
-                    "and organization_id = " + orgId + getDateFilter(startDate, endDate)
-                    + " group by resource_id)" +
-                    "select resource_id, resource_name, vulnCount" +
-                    " from resource inner join countTable using (resource_id)" +
-                    "group by resource_id, resource_name, vulnCount ";
-            ResultSet rs = statement.executeQuery(query);
-            while (rs.next()) {
-                vulnCount = new VulnCount(
-                        rs.getInt("resource_id"),
-                        rs.getString("resource_name"),
-                        rs.getInt("vulnCount")
-                );
+            for (int i = 0; i < startDates.size(); i++) {
+                String query = "WITH countTable as (select resource_id, COUNT(vulnerability_id) vulnCount from vulnerabilities " +
+                        "where resource_id = " + id + " " +
+                        "and organization_id = " + orgId + getHistoricalDateString(startDates.get(i), endDates.get(i)) +
+                        " group by resource_id)" +
+                        "select resource_id, resource_name, vulnCount" +
+                        " from resource inner join countTable using (resource_id)" +
+                        "group by resource_id, resource_name, vulnCount ";
+                ResultSet rs = statement.executeQuery(query);
+                while (rs.next()){
+                    count.add(getVulnCount(rs, endDates.get(i)));
+                }
             }
         }catch (Exception e) {
             System.err.println(e.getMessage());
             throw new BadRequestException(e.getMessage());
         }
-        return vulnCount;
+        return count;
     }
 
     @GetMapping(
@@ -114,30 +130,47 @@ public class ResourceController {
                                                                   @RequestParam(value = "OS", required = false) String OS,
                                                                   @RequestParam(value = "resource_type", required = false) String resource_type
                                                        ) throws SQLException, BadRequestException {
-        VulnCount vulnCount = null;
-        ArrayList<VulnCount> vulnCounts = new ArrayList<>();
+        ArrayList<VulnCount> count = new ArrayList<>();
+        ArrayList<LocalDate> startDates = new ArrayList<>();
+        ArrayList<LocalDate> endDates = new ArrayList<>();
+        if(!Objects.isNull(endDate)){
+            if (!Objects.isNull(startDate)) {
+                LocalDate end = getEndDate(endDate);
+                startDates = getStartDates(startDate, end);
+                endDates = getEndDates(startDates);
+            }
+            else throw new BadRequestException("Start date is required to use End Date");
+        }
+        else {
+            LocalDate end = toMonday(LocalDate.now());
+            if (!Objects.isNull(startDate)) {
+                startDates = getStartDates(startDate, end);
+            }
+            else startDates.add(toMonday(LocalDate.now().minusWeeks(1)));
+            endDates = getEndDates(startDates);
+
+        }
         try(Connection connection = ResourceDB.connect();
             Statement statement = connection.createStatement()) {
-            String query = "WITH countTable as (select resource_id, COUNT(vulnerability_id) vulnCount " +
-                    "from vulnerabilities where organization_id = " + orgId + getDateFilter(startDate, endDate) +
-                    " group by resource_id)" +
-                    "select resource_id, resource_name, vulnCount" +
-                    " from resource inner join countTable using (resource_id) WHERE organization_id = " + orgId + getOSFilter(OS) + getResourceTypeFilter(resource_type) +
-                    " group by resource_id, resource_name, vulnCount ";
-            ResultSet rs = statement.executeQuery(query);
-            while (rs.next()) {
-                vulnCount = new VulnCount(
-                        rs.getInt("resource_id"),
-                        rs.getString("resource_name"),
-                        rs.getInt("vulnCount")
-                );
-                vulnCounts.add(vulnCount);
+            for (int i = 0; i < startDates.size(); i++) {
+                String query = "WITH countTable as (select resource_id, COUNT(vulnerability_id) vulnCount " +
+                        "from vulnerabilities where organization_id = " + orgId + getHistoricalDateString(startDates.get(i), endDates.get(i)) +
+                        " group by resource_id)" +
+                        "select resource_id, resource_name, vulnCount" +
+                        " from resource inner join countTable using (resource_id) WHERE organization_id = " + orgId + getOSFilter(OS) + getResourceTypeFilter(resource_type) +
+                        " group by resource_id, resource_name, vulnCount ";
+                System.out.println(query);
+                ResultSet rs = statement.executeQuery(query);
+                while (rs.next()){
+                    count.add(getVulnCount(rs, endDates.get(i)));
+                }
             }
+
         }catch (Exception e) {
             System.err.println(e.getMessage());
             throw new BadRequestException(e.getMessage());
         }
-        return vulnCounts;
+        return count;
     }
 
     @GetMapping(

@@ -64,6 +64,19 @@ public class SQLHelpers {
         return startDates;
     }
 
+    public static ArrayList<LocalDate> getNewlyFoundStartDates(Long startDate, LocalDate end){
+        ArrayList<LocalDate> startDates = new ArrayList<>();
+        Instant startInstant = Instant.ofEpochMilli(startDate);
+        ZoneId startZoneId = ZoneId.systemDefault();
+        LocalDate start = toMonday(startInstant.atZone(startZoneId).toLocalDate());
+        while (!start.equals(end)){
+            startDates.add(start);
+            start = start.plusWeeks(1);
+        }
+        startDates.add(end);
+        return startDates;
+    }
+
     public static ArrayList<LocalDate> getEndDates(ArrayList<LocalDate> startDates){
         ArrayList<LocalDate> endDates = new ArrayList<>();
         for (LocalDate startDate : startDates) {

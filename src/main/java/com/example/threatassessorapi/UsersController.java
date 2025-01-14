@@ -91,19 +91,19 @@ public class UsersController {
     }
 
 @DeleteMapping("/")
-public String DeleteUser(@RequestParam("name") String name, @RequestParam("password") String password, @RequestParam("orgId") int orgId) throws BadRequestException {
+public String DeleteUser(@RequestBody(required = true) User user) throws BadRequestException {
     try(Connection connection = ResourceDB.connect();
         Statement statement = connection.createStatement()) {
-        ResultSet rs = statement.executeQuery("select * from users where user_name = '" + name + "' and password = '" + password + "' and organization_id = '" + orgId + "'");
+        ResultSet rs = statement.executeQuery("select * from users where user_name = '" + user.getUserName() + "' and password = '" + user.getPassword() + "' and organization_id = '" + user.getOrgID() + "'");
         if (rs.next()) {
-            statement.executeQuery("Delete from users where user_name = '" + name + "' and password = '" + password + "' and organization_id = '" + orgId + "'");
+            statement.executeQuery("Delete from users where user_name = '" + user.getUserName() + "' and password = '" + user.getPassword() + "' and organization_id = '" + user.getOrgID() + "'");
         }
         else{
             throw new BadRequestException("No user found");
         }
     }catch (Exception e) {
         if (e.getMessage().equals("No results were returned by the query.")) {
-            return "User " + name + " Deleted for organization: " + orgId;
+            return "User " + user.getUserName() + " Deleted for organization: " + user.getOrgID();
         } else {
             System.out.println(e.getMessage());
             throw new BadRequestException(e.getMessage());

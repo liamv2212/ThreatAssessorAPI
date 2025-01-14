@@ -213,4 +213,137 @@ public class ResourcesControllerTest {
         }
         else System.out.println("Get All Resource Vulnerabilities... Fail");
     }
+
+    @Test
+    public void testGetResourceVulnerabilities_with_endDate_no_startDate() throws URISyntaxException, IOException, InterruptedException {
+        ArrayList<ResourceVulnerability> resourceVulns = new ArrayList<>();
+        Gson gson = new Gson();
+        HttpRequest getRequest = HttpRequest.newBuilder()
+                .uri(new URI("http://localhost:8080/resources/vulnerabilities?end_date=1735664375000&org_id=1"))
+                .build();
+
+        HttpClient httpClient = HttpClient.newHttpClient();
+
+        HttpResponse<String> getResponse = httpClient.send(getRequest, HttpResponse.BodyHandlers.ofString());
+        System.out.println(getResponse);
+    }
+
+    @Test
+    public void testGetResourceVulnerabilities_InvalidOS() throws URISyntaxException, IOException, InterruptedException {
+        ArrayList<ResourceVulnerability> resourceVulns = new ArrayList<>();
+        Gson gson = new Gson();
+        HttpRequest getRequest = HttpRequest.newBuilder()
+                .uri(new URI("http://localhost:8080/resources/vulnerabilities?OS=l1nux?org_id=1"))
+                .build();
+
+        HttpClient httpClient = HttpClient.newHttpClient();
+
+        HttpResponse<String> getResponse = httpClient.send(getRequest, HttpResponse.BodyHandlers.ofString());
+        System.out.println(getResponse);
+    }
+
+    @Test
+    public void testGetResourceVulnerabilities_InvalidResourceType() throws URISyntaxException, IOException, InterruptedException {
+        ArrayList<ResourceVulnerability> resourceVulns = new ArrayList<>();
+        Gson gson = new Gson();
+        HttpRequest getRequest = HttpRequest.newBuilder()
+                .uri(new URI("http://localhost:8080/resources/vulnerabilities?OS=l1nux?org_id=1"))
+                .build();
+
+        HttpClient httpClient = HttpClient.newHttpClient();
+
+        HttpResponse<String> getResponse = httpClient.send(getRequest, HttpResponse.BodyHandlers.ofString());
+        System.out.println(getResponse);
+    }
+
+    @Test
+    public void testGetVulnCountForResource_no_OrgID() throws URISyntaxException, IOException, InterruptedException {
+        ArrayList<ResourceVulnerability> resourceVulns = new ArrayList<>();
+        Gson gson = new Gson();
+        HttpRequest getRequest = HttpRequest.newBuilder()
+                .uri(new URI("http://localhost:8080/resources/1/vulnCount"))
+                .build();
+
+        HttpClient httpClient = HttpClient.newHttpClient();
+
+        HttpResponse<String> getResponse = httpClient.send(getRequest, HttpResponse.BodyHandlers.ofString());
+        System.out.println(getResponse);
+    }
+
+    @Test
+    public void testGetVulnCountForResource_with_OrgID() throws URISyntaxException, IOException, InterruptedException {
+        ArrayList<ResourceVulnerability> resourceVulns = new ArrayList<>();
+        Gson gson = new Gson();
+        HttpRequest getRequest = HttpRequest.newBuilder()
+                .uri(new URI("http://localhost:8080/resources/1/vulnCount?org_id=1"))
+                .build();
+
+        HttpClient httpClient = HttpClient.newHttpClient();
+
+        HttpResponse<String> getResponse = httpClient.send(getRequest, HttpResponse.BodyHandlers.ofString());
+        for(String resource_vulns : getResponse.body().replaceAll("[\\[\\]]", "").replaceAll("},\\{", "}+{").split("\\+")){
+            ResourceVulnerability resourceVuln = gson.fromJson(resource_vulns, ResourceVulnerability.class);
+            resourceVulns.add(resourceVuln);
+        }
+        if(resourceVulns.size() > 0){
+            System.out.println("Get All Resource Vulnerabilities... Pass");
+        }
+        else System.out.println("Get All Resource Vulnerabilities... Fail");
+    }
+
+    @Test
+    public void testGetVulnCountForResource_with_OrgID_and_startDate() throws URISyntaxException, IOException, InterruptedException {
+        ArrayList<ResourceVulnerability> resourceVulns = new ArrayList<>();
+        Gson gson = new Gson();
+        HttpRequest getRequest = HttpRequest.newBuilder()
+                .uri(new URI("http://localhost:8080/resources/1/vulnCount?start_date=1735232375000&org_id=1"))
+                .build();
+
+        HttpClient httpClient = HttpClient.newHttpClient();
+
+        HttpResponse<String> getResponse = httpClient.send(getRequest, HttpResponse.BodyHandlers.ofString());
+        for(String resource_vulns : getResponse.body().replaceAll("[\\[\\]]", "").replaceAll("},\\{", "}+{").split("\\+")){
+            ResourceVulnerability resourceVuln = gson.fromJson(resource_vulns, ResourceVulnerability.class);
+            resourceVulns.add(resourceVuln);
+        }
+        if(resourceVulns.size() > 0){
+            System.out.println("Get All Resource Vulnerabilities... Pass");
+        }
+        else System.out.println("Get All Resource Vulnerabilities... Fail");
+    }
+
+    @Test
+    public void testGetVulnCountForResource_with_OrgID_and_startDate_and_endDate() throws URISyntaxException, IOException, InterruptedException {
+        ArrayList<ResourceVulnerability> resourceVulns = new ArrayList<>();
+        Gson gson = new Gson();
+        HttpRequest getRequest = HttpRequest.newBuilder()
+                .uri(new URI("http://localhost:8080/resources/1/vulnCount?start_date=1735232375000&end_date=1735664375000&org_id=1"))
+                .build();
+
+        HttpClient httpClient = HttpClient.newHttpClient();
+
+        HttpResponse<String> getResponse = httpClient.send(getRequest, HttpResponse.BodyHandlers.ofString());
+        for(String resource_vulns : getResponse.body().replaceAll("[\\[\\]]", "").replaceAll("},\\{", "}+{").split("\\+")){
+            ResourceVulnerability resourceVuln = gson.fromJson(resource_vulns, ResourceVulnerability.class);
+            resourceVulns.add(resourceVuln);
+        }
+        if(resourceVulns.size() > 0){
+            System.out.println("Get All Resource Vulnerabilities... Pass");
+        }
+        else System.out.println("Get All Resource Vulnerabilities... Fail");
+    }
+
+    @Test
+    public void testGetVulnCountForResource_with_endDate_no_startDate() throws URISyntaxException, IOException, InterruptedException {
+        ArrayList<ResourceVulnerability> resourceVulns = new ArrayList<>();
+        Gson gson = new Gson();
+        HttpRequest getRequest = HttpRequest.newBuilder()
+                .uri(new URI("http://localhost:8080/resources/1/vulnCount?end_date=1735664375000&org_id=1"))
+                .build();
+
+        HttpClient httpClient = HttpClient.newHttpClient();
+
+        HttpResponse<String> getResponse = httpClient.send(getRequest, HttpResponse.BodyHandlers.ofString());
+        System.out.println(getResponse);
+    }
 }

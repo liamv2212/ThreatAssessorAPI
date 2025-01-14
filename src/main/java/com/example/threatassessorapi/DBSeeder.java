@@ -28,9 +28,11 @@ public class DBSeeder {
         createOrganizationsTable();
         createResourceTable();
         createVulnerabilitiesTable();
+        createUserTable();
         createOrganizations();
         createResources();
         createVulnerabilities();
+        createInitialUser();
     }
 
     private static void createVulnerabilities() {
@@ -113,6 +115,14 @@ public class DBSeeder {
         }
     }
 
+    public static void createInitialUser(){
+        try (Connection connection = ResourceDB.connect();
+             Statement statement = connection.createStatement()) {
+            statement.executeQuery("INSERT INTO users values ('liamv', '2212Veitch', 1)");
+        } catch (SQLException | ClassNotFoundException e) {
+        }
+    }
+
     private static void createVulnerabilitiesTable() {
         try (Connection connection = ResourceDB.connect();
              Statement statement = connection.createStatement()) {
@@ -179,6 +189,28 @@ public class DBSeeder {
                     ");\n" +
                     "\n" +
                     "alter table resource\n" +
+                    "    owner to postgres;\n" +
+                    "\n";
+            statement.executeQuery(query);
+        } catch (SQLException | ClassNotFoundException e) {
+        }
+    }
+
+    private static void createUserTable(){
+        try (Connection connection = ResourceDB.connect();
+             Statement statement = connection.createStatement()) {
+            String query = "create table public.users\n" +
+                    "(\n" +
+                    "    user_name       text not null\n" +
+                    "        constraint users_pk\n" +
+                    "            primary key,\n" +
+                    "    password        text,\n" +
+                    "    organization_id integer\n" +
+                    "        constraint users_organizations_organization_id_fk\n" +
+                    "            references public.organizations\n" +
+                    ");\n" +
+                    "\n" +
+                    "alter table public.users\n" +
                     "    owner to postgres;\n" +
                     "\n";
             statement.executeQuery(query);

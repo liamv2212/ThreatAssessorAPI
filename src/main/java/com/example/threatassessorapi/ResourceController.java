@@ -159,7 +159,6 @@ public class ResourceController {
                         "select resource_id, resource_name, vulnCount" +
                         " from resource inner join countTable using (resource_id) WHERE organization_id = " + orgId + getOSFilter(OS) + getResourceTypeFilter(resource_type) +
                         " group by resource_id, resource_name, vulnCount ";
-                System.out.println(query);
                 ResultSet rs = statement.executeQuery(query);
                 while (rs.next()){
                     count.add(getVulnCount(rs, endDates.get(i)));

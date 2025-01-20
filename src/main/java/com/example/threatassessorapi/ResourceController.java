@@ -11,6 +11,7 @@ import java.util.Objects;
 import static com.example.threatassessorapi.SQLHelpers.*;
 
 @RestController
+@CrossOrigin
 @RequestMapping(path = "/resources")
 public class ResourceController {
     @GetMapping(

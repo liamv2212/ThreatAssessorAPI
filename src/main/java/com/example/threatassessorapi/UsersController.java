@@ -9,6 +9,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 @RestController
+@CrossOrigin
 @RequestMapping(path = "/users")
 public class UsersController {
     @GetMapping("/")

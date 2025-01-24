@@ -23,7 +23,7 @@ public class ResourceController {
         var resources = new ArrayList<Resource>();
         try(Connection connection = ResourceDB.connect();
             Statement statement = connection.createStatement()) {
-            ResultSet rs = statement.executeQuery("select * from resource where organization_id = " + orgId + getResourceTypeFilter(resource_type) + getOSFilter(OS));
+            ResultSet rs = statement.executeQuery("select * from resource where organization_id = " + orgId + getResourceTypeFilter(resource_type) + getOSFilter(OS) + " order by resource_id desc");
             while (rs.next()) {
                 var resource = new Resource(
                         rs.getInt("resource_id"),

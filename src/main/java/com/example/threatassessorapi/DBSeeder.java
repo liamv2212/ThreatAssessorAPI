@@ -37,13 +37,29 @@ public class DBSeeder {
 
     private static void createVulnerabilities() {
         String[] alphabet = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"};
-
+        String criticality = "";
         for (int i = 0; i < 10; i++) {
             int resourceId = i+1;
             for (int x=0; x<10; x++) {
                 partition_dates.clear();
                 StringBuilder vulnerability = new StringBuilder();
                 int riskScore = rand.nextInt(1000);
+                if (riskScore >= 900){
+                    criticality = "Critical";
+                }
+                if (riskScore >= 750 && riskScore < 900){
+                    criticality = "High";
+                }
+                if (riskScore >= 500 && riskScore < 750){
+                    criticality = "Medium";
+                }
+                if (riskScore >= 250 && riskScore < 500){
+                    criticality = "Low";
+                }
+                if (riskScore < 250){
+                    criticality = "Info";
+                }
+
                     int nameLength = rand.nextInt(25) + 1;
                     for (int j = 0; j < nameLength; j++) {
                         vulnerability.append(alphabet[rand.nextInt(alphabet.length)]);
@@ -56,8 +72,8 @@ public class DBSeeder {
                     for(int l = 0; l<partition_dates.size(); l++) {
                         try (Connection connection = ResourceDB.connect();
                              Statement statement = connection.createStatement()) {
-                            String sqlQuery = "INSERT INTO vulnerabilities(vulnerability_name, resource_id, organization_id, risk_score, first_found, partition_date)\n" +
-                                    "VALUES ('" + vulnerability + "'," + resourceId + "," + org_id + "," + riskScore + ", '" + partition_dates.get(0) + "', '" + partition_dates.get(l) + "');";
+                            String sqlQuery = "INSERT INTO vulnerabilities(vulnerability_name, resource_id, organization_id, risk_score, criticality, first_found, partition_date)\n" +
+                                    "VALUES ('" + vulnerability + "'," + resourceId + "," + org_id + "," + riskScore + ", '" + criticality + "', '" + partition_dates.get(0) + "', '" + partition_dates.get(l) + "');";
                             statement.executeQuery(sqlQuery);
                         } catch (SQLException | ClassNotFoundException e) {
                         }
@@ -139,8 +155,10 @@ public class DBSeeder {
                     "        constraint vulnerabilities_organizations_organization_id_fk\n" +
                     "            references organizations,\n" +
                     "    risk_score        bigint not null,\n" +
+                    "    criticality       text not null,\n" +
                     "    first_found       date   not null,\n" +
                     "    partition_date    date   not null\n" +
+                    "CONSTRAINT chk_criticality check (criticality = 'Critical' OR criticality = 'High' OR criticality = 'Medium' OR criticality = 'Low' OR criticality = 'Info')" +
                     ");\n" +
                     "\n" +
                     "alter table vulnerabilities\n" +

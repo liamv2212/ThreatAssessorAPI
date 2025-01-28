@@ -38,7 +38,7 @@ public class DBSeeder {
     private static void createVulnerabilities() {
         String[] alphabet = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"};
         String criticality = "";
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 25; i++) {
             int resourceId = i+1;
             for (int x=0; x<10; x++) {
                 partition_dates.clear();
@@ -106,7 +106,7 @@ public class DBSeeder {
         String[] alphabet = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"};
         String resource_type;
         String OS;
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 25; i++) {
             StringBuilder resourceType = new StringBuilder();
             try (Connection connection = ResourceDB.connect();
                  Statement statement = connection.createStatement()) {

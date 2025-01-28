@@ -15,6 +15,28 @@ public class SQLHelpers {
 //        Long date = 1735232375000L;
 //        getDateFilter(date, null);
 //    }
+
+    public static String getCriticalityFilter(String criticality){
+        if (!Objects.isNull(criticality)) {
+            if (criticality.equalsIgnoreCase("critical")) {
+                criticality = "Critical";
+            }
+            if (criticality.equalsIgnoreCase("high")) {
+                criticality = "High";
+            }
+            if (criticality.equalsIgnoreCase("medium")) {
+                criticality = "Medium";
+            }
+            if (criticality.equalsIgnoreCase("low")) {
+                criticality = "Low";
+            }
+            if (criticality.equalsIgnoreCase("info")) {
+                criticality = "Info";
+            }
+            return " AND criticality = '"+criticality+"'";
+        }
+        else return "";
+    }
     public static String getDateFilter(Long startDate, Long endDate) throws Exception {
         String rangeQuery = "";
         if (startDate != null && endDate != null) {

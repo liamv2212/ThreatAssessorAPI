@@ -1,9 +1,7 @@
 package com.example.threatassessorapi;
 
-import jakarta.websocket.server.PathParam;
 import org.apache.coyote.BadRequestException;
 import org.springframework.web.bind.annotation.*;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;

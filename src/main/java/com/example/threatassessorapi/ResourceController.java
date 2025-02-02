@@ -23,13 +23,15 @@ public class ResourceController {
         var resources = new ArrayList<Resource>();
         try(Connection connection = ResourceDB.connect();
             Statement statement = connection.createStatement()) {
-            ResultSet rs = statement.executeQuery("select * from resource where organization_id = " + orgId + getResourceTypeFilter(resource_type) + getOSFilter(OS) + " order by resource_id desc");
+            ResultSet rs = statement.executeQuery("select * from resource where organization_id = " + orgId + getResourceTypeFilter(resource_type) + getOSFilter(OS));
             while (rs.next()) {
                 var resource = new Resource(
                         rs.getInt("resource_id"),
                         rs.getString("resource_name"),
                         rs.getDate("created_at"),
-                        rs.getInt("organization_id"));
+                        rs.getInt("organization_id"),
+                        rs.getString("operating_system"),
+                        rs.getString("resource_type"));
                 resources.add(resource);
             }
         }catch (Exception e) {
@@ -195,5 +197,106 @@ public class ResourceController {
         }
         return count;
     }
+
+    @GetMapping(
+            path="/countLinux",
+            produces = "application/json")
+    private static int countAllLinuxResources(@RequestParam("org_id") int orgId) throws SQLException, BadRequestException {
+        int count = 0;
+        try(Connection connection = ResourceDB.connect();
+            Statement statement = connection.createStatement()) {
+            String query = "select count(DISTINCT resource_id) count" +
+                    " from resource WHERE organization_id = " + orgId + " AND operating_system = 'LINUX'";
+            ResultSet rs = statement.executeQuery(query);
+            while (rs.next()) {
+                count = rs.getInt("count");
+            }
+        }catch (Exception e) {
+            System.err.println(e.getMessage());
+            throw new BadRequestException(e.getMessage());
+        }
+        return count;
+    }
+
+    @GetMapping(
+            path="/countMac",
+            produces = "application/json")
+    private static int countAllMacResources(@RequestParam("org_id") int orgId) throws SQLException, BadRequestException {
+        int count = 0;
+        try(Connection connection = ResourceDB.connect();
+            Statement statement = connection.createStatement()) {
+            String query = "select count(DISTINCT resource_id) count" +
+                    " from resource WHERE organization_id = " + orgId + " AND operating_system = 'MAC'";
+            ResultSet rs = statement.executeQuery(query);
+            while (rs.next()) {
+                count = rs.getInt("count");
+            }
+        }catch (Exception e) {
+            System.err.println(e.getMessage());
+            throw new BadRequestException(e.getMessage());
+        }
+        return count;
+    }
+
+    @GetMapping(
+            path="/countWindows",
+            produces = "application/json")
+    private static int countAllWindowsResources(@RequestParam("org_id") int orgId) throws SQLException, BadRequestException {
+        int count = 0;
+        try(Connection connection = ResourceDB.connect();
+            Statement statement = connection.createStatement()) {
+            String query = "select count(DISTINCT resource_id) count" +
+                    " from resource WHERE organization_id = " + orgId + " AND operating_system = 'WINDOWS'";
+            ResultSet rs = statement.executeQuery(query);
+            while (rs.next()) {
+                count = rs.getInt("count");
+            }
+        }catch (Exception e) {
+            System.err.println(e.getMessage());
+            throw new BadRequestException(e.getMessage());
+        }
+        return count;
+    }
+
+    @GetMapping(
+            path="/countCloud",
+            produces = "application/json")
+    private static int countAllCloudResources(@RequestParam("org_id") int orgId) throws SQLException, BadRequestException {
+        int count = 0;
+        try(Connection connection = ResourceDB.connect();
+            Statement statement = connection.createStatement()) {
+            String query = "select count(DISTINCT resource_id) count" +
+                    " from resource WHERE organization_id = " + orgId + " AND resource_type = 'CLOUD'";
+            ResultSet rs = statement.executeQuery(query);
+            while (rs.next()) {
+                count = rs.getInt("count");
+            }
+        }catch (Exception e) {
+            System.err.println(e.getMessage());
+            throw new BadRequestException(e.getMessage());
+        }
+        return count;
+    }
+
+    @GetMapping(
+            path="/countOnPrem",
+            produces = "application/json")
+    private static int countAllOnPremResources(@RequestParam("org_id") int orgId) throws SQLException, BadRequestException {
+        int count = 0;
+        try(Connection connection = ResourceDB.connect();
+            Statement statement = connection.createStatement()) {
+            String query = "select count(DISTINCT resource_id) count" +
+                    " from resource WHERE organization_id = " + orgId + " AND resource_type = 'ON-PREM'";
+            ResultSet rs = statement.executeQuery(query);
+            while (rs.next()) {
+                count = rs.getInt("count");
+            }
+        }catch (Exception e) {
+            System.err.println(e.getMessage());
+            throw new BadRequestException(e.getMessage());
+        }
+        return count;
+    }
+
 }
 

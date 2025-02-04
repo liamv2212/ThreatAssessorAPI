@@ -22,7 +22,6 @@ public class UsersController {
             while (rs.next()) {
                 user = new User(
                      rs.getString("user_name"),
-                     rs.getString("password"),
                      rs.getInt("organization_id")
                 );
                 users.add(user);
@@ -35,12 +34,14 @@ public class UsersController {
     }
 
     @GetMapping("/{name}")
-    public ArrayList<User> getUserByName(@PathVariable("name") String name) throws BadRequestException {
+    public ArrayList<User> getUserByName(@PathVariable("name") String name,
+                                         @RequestParam("password") String password) throws BadRequestException {
+        System.out.println(password);
         ArrayList<User> users = new ArrayList<>();
         User user = null;
         try(Connection connection = ResourceDB.connect();
             Statement statement = connection.createStatement()) {
-            ResultSet rs = statement.executeQuery("select * from users where user_name = '" + name + "'");
+            ResultSet rs = statement.executeQuery("select * from users where user_name = '" + name + "' AND password = '" + password + "'");
             if(rs.next()){
                 user = new User(
                         rs.getString("user_name"),

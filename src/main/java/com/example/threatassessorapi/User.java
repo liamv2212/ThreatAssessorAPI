@@ -10,6 +10,12 @@ public class User {
         this.password = password;
         this.orgID = orgID;
     }
+
+    public User(String userName, int orgID) {
+        this.userName = userName;
+        this.password = "Hidden";
+        this.orgID = orgID;
+    }
     
     public String getUserName() {
         return userName;

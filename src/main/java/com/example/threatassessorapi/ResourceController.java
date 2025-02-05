@@ -48,6 +48,7 @@ public class ResourceController {
                                                                                    @RequestParam(value = "start_date", required = false) Long startDate,
                                                                                    @RequestParam(value = "end_date", required = false) Long endDate,
                                                                                    @RequestParam(value = "OS", required = false) String OS,
+                                                                                   @RequestParam(value = "criticality", required = false) String criticality,
                                                                                    @RequestParam(value = "resource_type", required = false) String resource_type
                                                                                    ) throws SQLException, BadRequestException {
         var resourceVulnerabilities = new ArrayList<ResourceVulnerability>();
@@ -55,7 +56,7 @@ public class ResourceController {
             Statement statement = connection.createStatement()) {
             String query = "select resource_id, resource_name, vulnerability_id, vulnerability_name, partition_date, organization_id" +
                     " from resource inner join vulnerabilities using (resource_id, organization_id)" +
-                    " where organization_id = " + orgId + getDateFilter(startDate, endDate) + getResourceTypeFilter(resource_type) + getOSFilter(OS) + " group by resource_id, vulnerability_id ";
+                    " where organization_id = " + orgId + getDateFilter(startDate, endDate) + getResourceTypeFilter(resource_type) + getOSFilter(OS) + getCriticalityFilter(criticality) + " group by resource_id, vulnerability_id ";
             ResultSet rs = statement.executeQuery(query);
             while (rs.next()) {
                 var resourceVulnerability = new ResourceVulnerability(
@@ -131,7 +132,8 @@ public class ResourceController {
                                                                   @RequestParam(value = "start_date", required = false) Long startDate,
                                                                   @RequestParam(value = "end_date", required = false) Long endDate,
                                                                   @RequestParam(value = "OS", required = false) String OS,
-                                                                  @RequestParam(value = "resource_type", required = false) String resource_type
+                                                                  @RequestParam(value = "resource_type", required = false) String resource_type,
+                                                                  @RequestParam(value = "criticality", required = false) String criticality
                                                        ) throws SQLException, BadRequestException {
         ArrayList<VulnCount> count = new ArrayList<>();
         ArrayList<LocalDate> startDates = new ArrayList<>();
@@ -157,10 +159,10 @@ public class ResourceController {
             Statement statement = connection.createStatement()) {
             for (int i = 0; i < startDates.size(); i++) {
                 String query = "WITH countTable as (select resource_id, COUNT(vulnerability_id) vulnCount " +
-                        "from vulnerabilities where organization_id = " + orgId + getHistoricalDateString(startDates.get(i), endDates.get(i)) +
+                        "from vulnerabilities where organization_id = " + orgId + getHistoricalDateString(startDates.get(i), endDates.get(i))  + getCriticalityFilter(criticality) +
                         " group by resource_id)" +
                         "select resource_id, resource_name, vulnCount" +
-                        " from resource inner join countTable using (resource_id) WHERE organization_id = " + orgId + getOSFilter(OS) + getResourceTypeFilter(resource_type) +
+                        " from resource inner join countTable using (resource_id) WHERE organization_id = " + orgId + getOSFilter(OS) + getResourceTypeFilter(resource_type)  +
                         " group by resource_id, resource_name, vulnCount ";
                 ResultSet rs = statement.executeQuery(query);
                 while (rs.next()){

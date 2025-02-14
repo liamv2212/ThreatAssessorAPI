@@ -25,20 +25,53 @@ public class DBSeeder {
             produces = "application/json")
     public static void resetTables(){
         dropTables();
+        System.out.print("Creating Organizations Table...");
         createOrganizationsTable();
+        System.out.println("  Done.");
+
+        System.out.print("Creating Resource Table...");
         createResourceTable();
+        System.out.println("  Done.");
+
+        System.out.print("Creating Vulnerabilities Table...");
         createVulnerabilitiesTable();
+        System.out.println("  Done.");
+
+        System.out.print("Creating Users Table...");
         createUserTable();
+        System.out.println("  Done.");
+
+        System.out.print("Populating Organizations Table...");
         createOrganizations();
+        System.out.println("  Done.");
+
+        System.out.print("Populating Resource Table...");
         createResources();
+        System.out.println("  Done.");
+
+        System.out.print("Populating Vulnerabilities Table...");
         createVulnerabilities();
+        System.out.println("  Done.");
+
+        System.out.print("Populating Users Table...");
         createInitialUser();
+        System.out.println("  Done.");
+
+        System.out.print("Creating Newly Found Vulnerabilities...");
+        createNewlyFound();
+        System.out.println("  Done.");
     }
 
     private static void createVulnerabilities() {
+        String steps = "";
         String[] alphabet = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"};
         String criticality = "";
         for (int i = 0; i < 25; i++) {
+            int randomInt = rand.nextInt(2);
+            if(randomInt == 0){
+                steps = "Unknown";
+            }
+            else steps = "Restart resource";
             int resourceId = i+1;
             for (int x=0; x<10; x++) {
                 partition_dates.clear();
@@ -69,11 +102,12 @@ public class DBSeeder {
                         date = toMonday(date);
                         partition_dates.add(date);
                     }
+
                     for(int l = 0; l<partition_dates.size(); l++) {
                         try (Connection connection = ResourceDB.connect();
                              Statement statement = connection.createStatement()) {
-                            String sqlQuery = "INSERT INTO vulnerabilities(vulnerability_name, resource_id, organization_id, risk_score, criticality, first_found, partition_date)\n" +
-                                    "VALUES ('" + vulnerability + "'," + resourceId + "," + org_id + "," + riskScore + ", '" + criticality + "', '" + partition_dates.get(0) + "', '" + partition_dates.get(l) + "');";
+                            String sqlQuery = "INSERT INTO vulnerabilities(vulnerability_name, resource_id, organization_id, risk_score, criticality, remediation_steps, first_found, partition_date)\n" +
+                                    "VALUES ('" + vulnerability + "'," + resourceId + "," + org_id + "," + riskScore + ", '" + criticality + "', '" + steps + "','" + partition_dates.get(0) + "', '" + partition_dates.get(l) + "');";
                             statement.executeQuery(sqlQuery);
                         } catch (SQLException | ClassNotFoundException e) {
                         }
@@ -82,6 +116,21 @@ public class DBSeeder {
         }
     }
 
+    private static void createNewlyFound() {
+        String criticality = "";
+        String name = "NF";
+        for (int i = 0; i < 10; i++) {
+            name = "NF";
+            name = name + (i+1);
+                    try (Connection connection = ResourceDB.connect();
+                         Statement statement = connection.createStatement()) {
+                        String sqlQuery = "INSERT INTO vulnerabilities(vulnerability_name, resource_id, organization_id, risk_score, criticality, first_found, partition_date)\n" +
+                                "VALUES ('" + name + "'," + 1 + "," + 1 + "," + 1 + ", 'Info', '" + toMonday(LocalDate.now()) + "', '" + toMonday(LocalDate.now()) + "');";
+                        statement.executeQuery(sqlQuery);
+                    } catch (SQLException | ClassNotFoundException e) {
+                    }
+        }
+    }
     private static void createOrganizations() {
         String[] alphabet = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"};
 
@@ -155,6 +204,7 @@ public class DBSeeder {
                     "        constraint vulnerabilities_organizations_organization_id_fk\n" +
                     "            references organizations,\n" +
                     "    risk_score        bigint not null,\n" +
+                    "    remediation_steps text not null,\n" +
                     "    criticality       text not null,\n" +
                     "    first_found       date   not null,\n" +
                     "    partition_date    date   not null\n" +

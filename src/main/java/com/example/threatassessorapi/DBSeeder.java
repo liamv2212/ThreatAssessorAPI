@@ -66,14 +66,16 @@ public class DBSeeder {
         String steps = "";
         String[] alphabet = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"};
         String criticality = "";
-        for (int i = 0; i < 25; i++) {
+        for (int i = 0; i < 10; i++) {
             int randomInt = rand.nextInt(2);
             if(randomInt == 0){
                 steps = "Unknown";
             }
             else steps = "Restart resource";
             int resourceId = i+1;
-            for (int x=0; x<10; x++) {
+            for (int x=0; x<100; x++) {
+                int numWeeks = rand.nextInt(20,52);
+                System.out.println(numWeeks);
                 partition_dates.clear();
                 StringBuilder vulnerability = new StringBuilder();
                 int riskScore = rand.nextInt(1000);
@@ -97,8 +99,8 @@ public class DBSeeder {
                     for (int j = 0; j < nameLength; j++) {
                         vulnerability.append(alphabet[rand.nextInt(alphabet.length)]);
                     }
-                    for (int k = 0; k< rand.nextInt(9,12); k++){
-                        LocalDate date = LocalDate.now().minusWeeks(10).plusWeeks(k);
+                    for (int k = 0; k< numWeeks; k++){
+                        LocalDate date = LocalDate.now().minusWeeks(numWeeks).plusWeeks(k);
                         date = toMonday(date);
                         partition_dates.add(date);
                     }
@@ -117,15 +119,14 @@ public class DBSeeder {
     }
 
     private static void createNewlyFound() {
-        String criticality = "";
-        String name = "NF";
+        String name;
         for (int i = 0; i < 10; i++) {
             name = "NF";
             name = name + (i+1);
                     try (Connection connection = ResourceDB.connect();
                          Statement statement = connection.createStatement()) {
-                        String sqlQuery = "INSERT INTO vulnerabilities(vulnerability_name, resource_id, organization_id, risk_score, criticality, first_found, partition_date)\n" +
-                                "VALUES ('" + name + "'," + 1 + "," + 1 + "," + 1 + ", 'Info', '" + toMonday(LocalDate.now()) + "', '" + toMonday(LocalDate.now()) + "');";
+                        String sqlQuery = "INSERT INTO vulnerabilities(vulnerability_name, resource_id, organization_id, risk_score, remediation_steps,criticality, first_found, partition_date)\n" +
+                                "VALUES ('" + name + "'," + 1 + "," + 1 + "," + 1 + ", 'unknown', 'Info', '" + toMonday(LocalDate.now()) + "', '" + toMonday(LocalDate.now()) + "');";
                         statement.executeQuery(sqlQuery);
                     } catch (SQLException | ClassNotFoundException e) {
                     }
@@ -183,7 +184,7 @@ public class DBSeeder {
     public static void createInitialUser(){
         try (Connection connection = ResourceDB.connect();
              Statement statement = connection.createStatement()) {
-            statement.executeQuery("INSERT INTO users values ('liamv', '2212Veitch', 1)");
+            statement.executeQuery("INSERT INTO users values ('liamv', 'password', 1)");
         } catch (SQLException | ClassNotFoundException e) {
         }
     }
@@ -290,6 +291,7 @@ public class DBSeeder {
         dropVulns();
         dropResources();
         dropOrganizations();
+        dropUsers();
     }
     private static void dropVulns() {
         try (Connection connection = ResourceDB.connect();
@@ -312,4 +314,12 @@ public class DBSeeder {
         } catch (SQLException | ClassNotFoundException e) {
         }
     }
+    private static void dropUsers() {
+        try (Connection connection = ResourceDB.connect();
+             Statement statement = connection.createStatement()) {
+            statement.executeQuery("DROP TABLE IF EXISTS users");
+        } catch (SQLException | ClassNotFoundException e) {
+        }
+    }
+
 }

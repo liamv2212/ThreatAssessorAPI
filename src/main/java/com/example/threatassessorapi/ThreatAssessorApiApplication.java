@@ -13,7 +13,7 @@ import static com.example.threatassessorapi.DBSeeder.resetTables;
 public class ThreatAssessorApiApplication {
 
 	public static void main(String[] args) throws SQLException {
-		resetTables();
+//		resetTables();
 		SpringApplication.run(ThreatAssessorApiApplication.class, args);
 	}
 }

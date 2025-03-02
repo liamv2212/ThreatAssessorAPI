@@ -50,7 +50,6 @@ public class UsersController {
                 );
                 users.add(user);
             }
-            else throw new BadRequestException("User not found");
         }catch (Exception e) {
             System.err.println(e.getMessage());
             throw new BadRequestException(e.getMessage());

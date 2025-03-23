@@ -75,7 +75,6 @@ public class DBSeeder {
             int resourceId = i+1;
             for (int x=0; x<100; x++) {
                 int numWeeks = rand.nextInt(20,52);
-                System.out.println(numWeeks);
                 partition_dates.clear();
                 StringBuilder vulnerability = new StringBuilder();
                 int riskScore = rand.nextInt(1000);

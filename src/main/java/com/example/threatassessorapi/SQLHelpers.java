@@ -10,11 +10,6 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 public class SQLHelpers {
-//
-//    public static void main(String[] args) throws Exception {
-//        Long date = 1735232375000L;
-//        getDateFilter(date, null);
-//    }
 
     public static String getCriticalityFilter(String criticality) throws Exception {
         if (!Objects.isNull(criticality)) {
@@ -77,14 +72,7 @@ public class SQLHelpers {
     }
 
     public static ArrayList<LocalDate> getNewlyFoundStartDates(Long startDate, LocalDate end){
-        ArrayList<LocalDate> startDates = new ArrayList<>();
-        Instant startInstant = Instant.ofEpochMilli(startDate);
-        ZoneId startZoneId = ZoneId.systemDefault();
-        LocalDate start = toMonday(startInstant.atZone(startZoneId).toLocalDate());
-        while (!start.equals(end)){
-            startDates.add(start);
-            start = start.plusWeeks(1);
-        }
+        ArrayList<LocalDate> startDates = getStartDates(startDate, end);
         startDates.add(end);
         return startDates;
     }

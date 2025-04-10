@@ -100,7 +100,6 @@ public class UserControllerTest {
         User user = new User("username", "password", 1);
         Gson gson = new Gson();
         String json = gson.toJson(user);
-        System.out.println(json);
         HttpRequest postRequest = HttpRequest.newBuilder()
                 .uri(new URI("http://localhost:8080/users/"))
                 .header("Content-Type", "application/json")

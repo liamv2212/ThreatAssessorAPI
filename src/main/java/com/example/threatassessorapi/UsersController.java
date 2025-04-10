@@ -36,7 +36,6 @@ public class UsersController {
     @GetMapping("/{name}")
     public ArrayList<User> getUserByName(@PathVariable("name") String name,
                                          @RequestParam("password") String password) throws BadRequestException {
-        System.out.println(password);
         ArrayList<User> users = new ArrayList<>();
         User user = null;
         try(Connection connection = ResourceDB.connect();
@@ -79,7 +78,6 @@ public class UsersController {
     public String createUser(@RequestParam(value = "userName", required = true) String userName,
                              @RequestParam(value = "password", required = true) String password,
                              @RequestParam(value = "orgID", required = true) String orgID) throws BadRequestException {
-        System.out.println();
         try(Connection connection = ResourceDB.connect();
             Statement statement = connection.createStatement()) {
             ResultSet rs = statement.executeQuery("Insert Into users values ('" + userName + "', '" + password + "', '" + orgID + "')");
